@@ -14,6 +14,7 @@ import { Home as HomeIcon, UtensilsCrossed, BarChart2 } from 'lucide-react';
 import { FoodSearch } from './components/foods/FoodSearch';
 import { Settings } from './pages/Settings';
 import { useState } from 'react';
+import { clsx } from 'clsx';
 import './index.css';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
