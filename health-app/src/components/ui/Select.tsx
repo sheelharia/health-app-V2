@@ -24,8 +24,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           id={selectId}
           className={clsx(
-            'w-full px-3 py-2 border rounded-lg shadow-sm appearance-none',
-            'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+            'w-full px-4 py-3 border rounded-xl shadow-sm appearance-none',
+            'focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent',
             'disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed',
             error ? 'border-red-300 text-red-900 focus:ring-red-500' : 'border-gray-300 bg-white',
             className

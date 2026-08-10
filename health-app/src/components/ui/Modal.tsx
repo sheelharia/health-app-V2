@@ -43,9 +43,9 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', showClose
           onClick={onClose}
           aria-hidden="true"
         />
-        <div className={clsx('relative w-full bg-white rounded-xl shadow-xl', sizes[size])}>
+        <div className={clsx('relative w-full bg-white rounded-2xl shadow-xl', sizes[size])}>
           {(title || showCloseButton) && (
-            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+            <div className="flex items-center justify-between p-4 border-b border-emerald-100">
               {title && <h2 className="text-lg font-semibold text-gray-900">{title}</h2>}
               {showCloseButton && (
                 <button
@@ -90,7 +90,7 @@ export function ConfirmDialog({
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="fixed inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
-        <div className="relative w-full max-w-md bg-white rounded-xl shadow-xl">
+        <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl">
           <div className="p-4 border-b border-gray-100">
             <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
           </div>
@@ -109,10 +109,10 @@ export function ConfirmDialog({
               onClick={onConfirm}
               disabled={isLoading}
               className={clsx(
-                'px-4 py-2 text-sm font-medium text-white rounded-lg disabled:opacity-50',
+                'px-4 py-2 text-sm font-medium text-white rounded-xl disabled:opacity-50',
                 variant === 'danger' 
                   ? 'bg-red-600 hover:bg-red-700' 
-                  : 'bg-blue-600 hover:bg-blue-700'
+                  : 'bg-brand-600 hover:bg-brand-700'
               )}
             >
               {isLoading ? '...' : confirmText}

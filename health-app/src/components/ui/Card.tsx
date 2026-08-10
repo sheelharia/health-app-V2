@@ -10,8 +10,8 @@ interface CardProps {
 export function Card({ children, className, padded = true }: CardProps) {
   return (
     <div className={clsx(
-      'bg-white rounded-xl shadow-sm border border-gray-100',
-      padded ? 'p-4 md:p-6' : '',
+      'bg-white rounded-2xl shadow-sm border border-emerald-100',
+      padded ? 'p-5' : '',
       className
     )}>
       {children}
