@@ -4,7 +4,7 @@ import { AuthProvider, useAuth } from './hooks/useAuth';
 import { queryClient } from './lib/queryClient';
 import { Home } from './pages/Home';
 import { History } from './pages/History';
-import { Analytics } from './pages/Analytics';
+import { Insights } from './pages/Insights';
 import { Login } from './pages/Login';
 import { SignUp } from './pages/SignUp';
 import { ForgotPassword } from './pages/ForgotPassword';
@@ -118,7 +118,7 @@ function AppRoutes() {
         <Route path="/settings" element={<ProtectedRoute><div>Settings - Coming Soon</div></ProtectedRoute>} />
         <Route path="/diet" element={<ProtectedRoute><History /></ProtectedRoute>} />
         <Route path="/add-food/:mealType" element={<ProtectedRoute><FoodSearchPage /></ProtectedRoute>} />
-        <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+        <Route path="/analytics" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {user && <BottomNav />}
