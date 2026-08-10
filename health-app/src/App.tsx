@@ -45,8 +45,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 }
 
 function BottomNav() {
-  const { user, signOut } = useAuth();
-  const [showMenu, setShowMenu] = useState(false);
+  const location = window.location.pathname;
   
   const navItems = [
     { path: '/', label: 'Home', icon: HomeIcon },
@@ -55,29 +54,26 @@ function BottomNav() {
   ];
 
   return (
-    <>
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-area-bottom z-50">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-3">
-            {navItems.map((item) => (
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-emerald-100 safe-area-bottom z-50">
+      <div className="max-w-4xl mx-auto">
+        <div className="grid grid-cols-3">
+          {navItems.map((item) => {
+            const isActive = location === item.path;
+            return (
               <button
                 key={item.path}
                 onClick={() => window.location.href = item.path}
-                className="flex flex-col items-center justify-center py-2 px-2 text-sm transition-colors"
+                className="flex flex-col items-center justify-center py-3 px-2 transition-colors"
               >
-                <item.icon className="h-6 w-6 mb-1" />
-                <span>{item.label}</span>
+                <item.icon className={clsx('h-6 w-6 mb-1', isActive ? 'text-brand-600' : 'text-gray-400')} />
+                <span className={clsx('text-xs font-medium', isActive ? 'text-brand-600' : 'text-gray-500')}>{item.label}</span>
+                {isActive && <div className="w-1 h-1 bg-brand-600 rounded-full mt-1" />}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
-      </nav>
-      
-      {/* User Menu Modal */}
-      {showMenu && (
-        <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setShowMenu(false)} />
-      )}
-    </>
+      </div>
+    </nav>
   );
 }
 
