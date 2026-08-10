@@ -100,7 +100,7 @@ export function calculateNutrition(
   food: Food,
   unit: FoodUnit,
   quantity: number
-): { calories: number; protein: number; carbs: number; fat: number } {
+): { calories: number; protein: number; carbs: number; fat: number; fiber: number } {
   const grams = unit.grams_per_unit * quantity;
   const factor = grams / 100;
 
@@ -109,6 +109,7 @@ export function calculateNutrition(
     protein: Math.round(food.protein_per_100g * factor * 10) / 10,
     carbs: Math.round(food.carbs_per_100g * factor * 10) / 10,
     fat: Math.round(food.fat_per_100g * factor * 10) / 10,
+    fiber: Math.round(((food as any).fiber_per_100g || 0) * factor * 10) / 10,
   };
 }
 

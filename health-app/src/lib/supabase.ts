@@ -60,6 +60,7 @@ export type MealItem = {
   protein: number;
   carbs: number;
   fat: number;
+  fiber: number;
   created_at: string;
   food?: Food;
   unit?: FoodUnit;
@@ -76,4 +77,18 @@ export type DailyGoal = {
 
 export type MealWithItems = Meal & {
   items: MealItem[];
+};
+
+export type MealTemplate = {
+  id: string;
+  user_id: string;
+  name: string;
+  meal_type: MealType;
+  items: Array<{
+    food_id: string;
+    unit_id: string;
+    quantity: number;
+    name?: string;
+  }>;
+  created_at: string;
 };

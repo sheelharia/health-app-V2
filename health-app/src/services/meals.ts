@@ -196,14 +196,15 @@ export function getMealTypeIcon(type: MealType): string {
   }
 }
 
-export function sumMealItems(items: MealItem[]): { calories: number; protein: number; carbs: number; fat: number } {
+export function sumMealItems(items: MealItem[]): { calories: number; protein: number; carbs: number; fat: number; fiber: number } {
   return items.reduce(
     (acc, item) => ({
       calories: acc.calories + item.calories,
       protein: acc.protein + item.protein,
       carbs: acc.carbs + item.carbs,
       fat: acc.fat + item.fat,
+      fiber: acc.fiber + (item.fiber || 0),
     }),
-    { calories: 0, protein: 0, carbs: 0, fat: 0 }
+    { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
   );
 }
