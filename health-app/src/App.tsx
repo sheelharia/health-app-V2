@@ -107,18 +107,19 @@ function AppRoutes() {
   
   return (
     <>
-      <div className="pb-20"> {/* Space for bottom nav */}
-        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-        <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
-        <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
-        <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
-        <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-        <Route path="/diet" element={<ProtectedRoute><History /></ProtectedRoute>} />
-        <Route path="/add-food/:mealType" element={<ProtectedRoute><FoodSearchPage /></ProtectedRoute>} />
-        <Route path="/analytics" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <div className="pb-20">
+        <Routes>
+          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
+          <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+          <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
+          <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="/diet" element={<ProtectedRoute><History /></ProtectedRoute>} />
+          <Route path="/add-food/:mealType" element={<ProtectedRoute><FoodSearchPage /></ProtectedRoute>} />
+          <Route path="/analytics" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </div>
       {user && <BottomNav />}
     </>
