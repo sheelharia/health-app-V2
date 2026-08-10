@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd health-app && npm run build",
+  "outputDirectory": "health-app/dist",
+  "installCommand": "cd health-app && npm install",
+  "framework": "vite"
+}
