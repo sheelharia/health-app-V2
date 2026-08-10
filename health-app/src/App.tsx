@@ -12,6 +12,7 @@ import { ResetPassword } from './pages/ResetPassword';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { Home as HomeIcon, UtensilsCrossed, BarChart2 } from 'lucide-react';
 import { FoodSearch } from './components/foods/FoodSearch';
+import { Settings } from './pages/Settings';
 import { useState } from 'react';
 import './index.css';
 
@@ -115,7 +116,7 @@ function AppRoutes() {
         <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
         <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><div>Settings - Coming Soon</div></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         <Route path="/diet" element={<ProtectedRoute><History /></ProtectedRoute>} />
         <Route path="/add-food/:mealType" element={<ProtectedRoute><FoodSearchPage /></ProtectedRoute>} />
         <Route path="/analytics" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
