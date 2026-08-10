@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { queryClient } from './lib/queryClient';
@@ -11,6 +11,7 @@ import { ForgotPassword } from './pages/ForgotPassword';
 import { ResetPassword } from './pages/ResetPassword';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { Home as HomeIcon, UtensilsCrossed, BarChart2 } from 'lucide-react';
+import { FoodSearch } from './components/foods/FoodSearch';
 import { useState } from 'react';
 import './index.css';
 
@@ -79,6 +80,26 @@ function BottomNav() {
   );
 }
 
+function FoodSearchPage() {
+  const { mealType } = useParams<{ mealType: string }>();
+  const navigate = useNavigate();
+  
+  if (!mealType) {
+    return <Navigate to="/" replace />;
+  }
+
+  return (
+    <FoodSearch
+      mealType={mealType.charAt(0).toUpperCase() + mealType.slice(1)}
+      onSelect={(food, unit) => {
+        // TODO: Add item to meal
+        navigate('/');
+      }}
+      onClose={() => navigate('/')}
+    />
+  );
+}
+
 function AppRoutes() {
   const { user, loading } = useAuth();
   
@@ -96,6 +117,7 @@ function AppRoutes() {
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><div>Settings - Coming Soon</div></ProtectedRoute>} />
         <Route path="/diet" element={<ProtectedRoute><History /></ProtectedRoute>} />
+        <Route path="/add-food/:mealType" element={<ProtectedRoute><FoodSearchPage /></ProtectedRoute>} />
         <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
