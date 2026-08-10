@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { queryClient } from './lib/queryClient';
-import { Dashboard } from './pages/Dashboard';
+import { Home } from './pages/Home';
 import { History } from './pages/History';
 import { Analytics } from './pages/Analytics';
 import { Login } from './pages/Login';
@@ -10,7 +10,7 @@ import { SignUp } from './pages/SignUp';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { ResetPassword } from './pages/ResetPassword';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
-import { Home, Calendar, BarChart2, Menu, X, User, Settings } from 'lucide-react';
+import { Home as HomeIcon, UtensilsCrossed, BarChart2 } from 'lucide-react';
 import { useState } from 'react';
 import './index.css';
 
@@ -47,8 +47,8 @@ function BottomNav() {
   const [showMenu, setShowMenu] = useState(false);
   
   const navItems = [
-    { path: '/', label: 'Dashboard', icon: Home },
-    { path: '/history', label: 'History', icon: Calendar },
+    { path: '/', label: 'Home', icon: HomeIcon },
+    { path: '/diet', label: 'Diet', icon: UtensilsCrossed },
     { path: '/analytics', label: 'Analytics', icon: BarChart2 },
   ];
 
@@ -93,8 +93,9 @@ function AppRoutes() {
         <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
         <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
         <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
-        <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+        <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><div>Settings - Coming Soon</div></ProtectedRoute>} />
+        <Route path="/diet" element={<ProtectedRoute><History /></ProtectedRoute>} />
         <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
