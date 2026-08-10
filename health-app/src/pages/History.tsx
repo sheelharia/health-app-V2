@@ -71,15 +71,15 @@ export function History() {
   const dayDetailMeals = selectedDate ? meals?.filter(m => m.date === selectedDate) || [] : [];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-12">
+    <div className="min-h-screen bg-brand-50 pb-20">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <header className="bg-white border-b border-emerald-100 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl"
                 aria-label="Previous month"
               >
                 <ChevronLeft className="h-6 w-6" />
@@ -89,7 +89,7 @@ export function History() {
               </h1>
               <button
                 onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl"
                 aria-label="Next month"
               >
                 <ChevronRight className="h-6 w-6" />
@@ -114,7 +114,7 @@ export function History() {
         {/* Calendar */}
         <Card className="mb-6">
           <CardHeader title="Meal History" subtitle={format(currentMonth, 'MMMM yyyy')} />
-          <div className="grid grid-cols-7 gap-px bg-gray-200 rounded-lg overflow-hidden">
+          <div className="grid grid-cols-7 gap-px bg-gray-200 rounded-2xl overflow-hidden">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
               <div key={day} className="p-2 bg-gray-100 text-center text-xs font-medium text-gray-600">
                 {day}
@@ -138,13 +138,13 @@ export function History() {
                         'transition-colors',
                         !isCurrentMonth && 'text-gray-300 bg-gray-50',
                         isCurrentMonth && 'text-gray-900 bg-white hover:bg-gray-50',
-                        isSelected && 'ring-2 ring-blue-500',
-                        isTodayDate && 'ring-2 ring-blue-500',
+                        isSelected && 'ring-2 ring-brand-500 bg-brand-50',
+                        isTodayDate && !isSelected && 'ring-2 ring-brand-500',
                       )}
                     >
                       <span className={clsx(
                         'text-sm font-medium',
-                        isTodayDate && 'text-blue-600',
+                        isTodayDate && 'text-brand-600',
                         !isCurrentMonth && 'text-gray-400',
                       )}>
                         {format(day, 'd')}
@@ -199,25 +199,27 @@ export function History() {
           <Card className="mb-6">
             <CardHeader title="Monthly Summary" />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="p-3 bg-gray-50 rounded-xl">
                 <p className="text-xs text-gray-500 uppercase tracking-wide">Days Logged</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {Object.keys(dailyTotals).length}
                 </p>
               </div>
-              <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="p-3 bg-gray-50 rounded-xl">
                 <p className="text-xs text-gray-500 uppercase tracking-wide">Total Calories</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {Object.values(dailyTotals).reduce((sum, d) => sum + d.calories, 0).toLocaleString()}
                 </p>
               </div>
-              <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="p-3 bg-gray-50 rounded-xl">
                 <p className="text-xs text-gray-500 uppercase tracking-wide">Avg/Day</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {Math.round(Object.values(dailyTotals).reduce((sum, d) => sum + d.calories, 0) / Object.keys(dailyTotals).length).toLocaleString()}
+                  {Object.keys(dailyTotals).length > 0
+                    ? Math.round(Object.values(dailyTotals).reduce((sum, d) => sum + d.calories, 0) / Object.keys(dailyTotals).length).toLocaleString()
+                    : '0'}
                 </p>
               </div>
-              <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="p-3 bg-gray-50 rounded-xl">
                 <p className="text-xs text-gray-500 uppercase tracking-wide">Total Meals</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {Object.values(dailyTotals).reduce((sum, d) => sum + d.mealCount, 0)}
@@ -231,7 +233,7 @@ export function History() {
         {(mealsLoading || totalsLoading) && (
           <div className="fixed inset-0 bg-white/80 flex items-center justify-center z-50">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-brand-500 border-t-transparent mx-auto mb-4"></div>
               <p className="text-gray-600">Loading history...</p>
             </div>
           </div>
@@ -255,7 +257,7 @@ export function History() {
               <div className="space-y-4">
                 {dayDetailMeals.map(meal => (
                   <div key={meal.id} className="border border-gray-200 rounded-lg overflow-hidden">
-                    <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+                    <div className="px-4 py-3 bg-brand-50 border-b border-emerald-100 flex items-center justify-between">
                       <span className="font-medium text-gray-900 capitalize">{meal.meal_type}</span>
                       <span className="text-sm text-gray-500">
                         {meal.items?.reduce((sum, i) => sum + i.calories, 0) || 0} kcal
