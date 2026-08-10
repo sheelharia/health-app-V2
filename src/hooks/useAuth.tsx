@@ -20,8 +20,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock user for development/preview
-    if (localStorage.getItem('mock_user') === 'true') {
+    // Mock user for development only (disabled in production to avoid RLS conflicts)
+    const isDev = import.meta.env.DEV;
+    if (isDev && localStorage.getItem('mock_user') === 'true') {
       const dummyUser = {
         id: '00000000-0000-0000-0000-000000000000',
         email: 'test@example.com',
