@@ -107,7 +107,7 @@ function AppRoutes() {
   
   return (
     <>
-      <Routes>
+      <div className="pb-20"> {/* Space for bottom nav */}
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
         <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
@@ -119,6 +119,7 @@ function AppRoutes() {
         <Route path="/analytics" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </div>
       {user && <BottomNav />}
     </>
   );
