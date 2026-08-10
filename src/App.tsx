@@ -13,8 +13,10 @@ import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { Home as HomeIcon, UtensilsCrossed, BarChart2 } from 'lucide-react';
 import { FoodSearch } from './components/foods/FoodSearch';
 import { Settings } from './pages/Settings';
+import { useMealActions } from './hooks/useMeals';
 import { useState } from 'react';
 import { clsx } from 'clsx';
+import { format } from 'date-fns';
 import './index.css';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -81,17 +83,29 @@ function BottomNav() {
 function FoodSearchPage() {
   const { mealType } = useParams<{ mealType: string }>();
   const navigate = useNavigate();
-  
+  const today = format(new Date(), 'yyyy-MM-dd');
+  const { addItem } = useMealActions(today);
+
   if (!mealType) {
     return <Navigate to="/" replace />;
   }
+
+  const validMealType = mealType.toLowerCase() as 'breakfast' | 'lunch' | 'snack' | 'dinner';
 
   return (
     <FoodSearch
       mealType={mealType.charAt(0).toUpperCase() + mealType.slice(1)}
       onSelect={(food, unit) => {
-        // TODO: Add item to meal
-        navigate('/');
+        addItem.mutate(
+          { mealType: validMealType, foodId: food.id, unitId: unit.id, quantity: 1 },
+          {
+            onSuccess: () => navigate('/'),
+            onError: (err) => {
+              console.error('Failed to add food:', err);
+              navigate('/');
+            },
+          }
+        );
       }}
       onClose={() => navigate('/')}
     />

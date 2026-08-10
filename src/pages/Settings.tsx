@@ -9,28 +9,46 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { clsx } from 'clsx';
 
+function loadMacroTargets() {
+  try {
+    const saved = localStorage.getItem('macro_targets');
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return { protein: 150, carbs: 200, fat: 67, fiber: 30 };
+}
+
+function loadMealPercentages() {
+  try {
+    const saved = localStorage.getItem('meal_percentages');
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return { breakfast: 30, lunch: 35, snack: 10, dinner: 25 };
+}
+
 export function Settings() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const today = format(new Date(), 'yyyy-MM-dd');
   
   const { goal, setGoal, isSetting } = useDailyGoal(today);
+  const savedMacros = loadMacroTargets();
+  const savedPercents = loadMealPercentages();
   
   const [calories, setCalories] = useState(goal?.calories || 2000);
-  const [protein, setProtein] = useState(150);
-  const [carbs, setCarbs] = useState(200);
-  const [fat, setFat] = useState(67);
-  const [fiber, setFiber] = useState(30);
+  const [protein, setProtein] = useState(savedMacros.protein);
+  const [carbs, setCarbs] = useState(savedMacros.carbs);
+  const [fat, setFat] = useState(savedMacros.fat);
+  const [fiber, setFiber] = useState(savedMacros.fiber);
   
-  const [mealPercentages, setMealPercentages] = useState({
-    breakfast: 30,
-    lunch: 35,
-    snack: 10,
-    dinner: 25,
-  });
+  const [mealPercentages, setMealPercentages] = useState(savedPercents);
+  const [saved, setSaved] = useState(false);
 
   const handleSaveGoals = () => {
     setGoal(calories);
+    localStorage.setItem('macro_targets', JSON.stringify({ protein, carbs, fat, fiber }));
+    localStorage.setItem('meal_percentages', JSON.stringify(mealPercentages));
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   };
 
   const handleSignOut = async () => {
@@ -129,7 +147,7 @@ export function Settings() {
             
             <Button onClick={handleSaveGoals} disabled={isSetting} className="w-full">
               <Save className="h-4 w-4 mr-2" />
-              {isSetting ? 'Saving...' : 'Save Goals'}
+              {isSetting ? 'Saving...' : saved ? '✓ Saved!' : 'Save Goals'}
             </Button>
           </div>
         </Card>
