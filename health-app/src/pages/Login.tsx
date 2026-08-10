@@ -29,7 +29,7 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-brand-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900">Welcome back</h1>
@@ -66,10 +66,10 @@ export function Login() {
             
             <div className="flex items-center justify-between">
               <label className="flex items-center">
-                <input type="checkbox" className="h-4 w-4 text-blue-600 border-gray-300 rounded" />
+                <input type="checkbox" className="h-4 w-4 text-brand-600 border-gray-300 rounded" />
                 <span className="ml-2 text-sm text-gray-600">Remember me</span>
               </label>
-              <Link to="/forgot-password" className="text-sm text-blue-600 hover:text-blue-500">
+              <Link to="/forgot-password" className="text-sm text-brand-600 hover:text-brand-700">
                 Forgot password?
               </Link>
             </div>
@@ -82,7 +82,7 @@ export function Login() {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{' '}
-              <Link to="/signup" className="text-blue-600 hover:text-blue-500 font-medium">
+              <Link to="/signup" className="text-brand-600 hover:text-brand-700 font-medium">
                 Sign up
               </Link>
             </p>
