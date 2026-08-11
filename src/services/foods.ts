@@ -127,9 +127,23 @@ export interface FoodLookupResult {
 }
 
 export async function lookupFood(query: string): Promise<FoodLookupResult> {
-  const { data, error } = await supabase.functions.invoke('lookup-food', {
-    body: { query },
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+  const res = await fetch(`${supabaseUrl}/functions/v1/lookup-food`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${supabaseKey}`,
+      'apikey': supabaseKey,
+    },
+    body: JSON.stringify({ query }),
   });
-  if (error) throw new Error(error.message || 'Food lookup failed');
-  return data;
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Lookup failed' }));
+    throw new Error(err.error || `Lookup failed (${res.status})`);
+  }
+
+  return res.json();
 }
