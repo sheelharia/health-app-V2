@@ -1,13 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, X, ArrowLeft } from 'lucide-react';
-import { useFoodSearch, useFoodCategories, useFoodDetail, useRecentFoods } from '../../hooks/useFoods';
+import { Search, X, ArrowLeft, Sparkles, AlertTriangle } from 'lucide-react';
+import { useFoodSearch, useFoodCategories, useFoodDetail, useRecentFoods, useFoodLookup } from '../../hooks/useFoods';
 import { Button } from '../ui/Button';
 import { Stepper } from '../ui/Stepper';
 import { PillFilter } from '../ui/PillFilter';
 import { Select } from '../ui/Select';
 import { clsx } from 'clsx';
 import type { FoodWithUnits, FoodUnit } from '../../lib/supabase';
-import { format } from 'date-fns';
 
 interface FoodSearchProps {
   mealType: string;
@@ -15,11 +14,28 @@ interface FoodSearchProps {
   onClose: () => void;
 }
 
+interface AiFoodDraft {
+  name: string;
+  calories_per_100g: number;
+  protein_per_100g: number;
+  carbs_per_100g: number;
+  fat_per_100g: number;
+  fiber_per_100g: number;
+  default_unit: string;
+  grams_per_unit: number;
+}
+
 export function FoodSearch({ mealType, onSelect, onClose }: FoodSearchProps) {
   const [selectedFood, setSelectedFood] = useState<FoodWithUnits | null>(null);
   const [selectedUnit, setSelectedUnit] = useState<FoodUnit | null>(null);
   const [quantity, setQuantity] = useState(1);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // AI lookup state
+  const [showAiLookup, setShowAiLookup] = useState(false);
+  const [aiQuery, setAiQuery] = useState('');
+  const [aiDraft, setAiDraft] = useState<AiFoodDraft | null>(null);
+  const foodLookup = useFoodLookup();
 
   const { query, setQuery, category, setCategory, foods, isLoading } = useFoodSearch();
   const { data: categories = [] } = useFoodCategories();
@@ -51,6 +67,64 @@ export function FoodSearch({ mealType, onSelect, onClose }: FoodSearchProps) {
       setQuantity(1);
       setQuery('');
     }
+  };
+
+  const handleAiLookup = async () => {
+    if (!aiQuery.trim()) return;
+    try {
+      const result = await foodLookup.mutateAsync(aiQuery.trim());
+      const food = result.food;
+      const defaultU = food.units?.find(u => u.is_default) || food.units?.[0];
+      setAiDraft({
+        name: food.name,
+        calories_per_100g: food.calories_per_100g,
+        protein_per_100g: food.protein_per_100g,
+        carbs_per_100g: food.carbs_per_100g,
+        fat_per_100g: food.fat_per_100g,
+        fiber_per_100g: (food as any).fiber_per_100g || 0,
+        default_unit: defaultU?.name || 'serving',
+        grams_per_unit: defaultU?.grams_per_unit || 100,
+      });
+    } catch (err) {
+      console.error('AI lookup failed:', err);
+    }
+  };
+
+  const handleAiConfirm = () => {
+    if (!aiDraft) return;
+    // Create a temporary FoodWithUnits from the draft
+    const tempFood: FoodWithUnits = {
+      id: `ai-${Date.now()}`,
+      name: aiDraft.name,
+      calories_per_100g: aiDraft.calories_per_100g,
+      protein_per_100g: aiDraft.protein_per_100g,
+      carbs_per_100g: aiDraft.carbs_per_100g,
+      fat_per_100g: aiDraft.fat_per_100g,
+      category: 'AI Lookup',
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      units: [{
+        id: `ai-unit-${Date.now()}`,
+        food_id: `ai-${Date.now()}`,
+        name: aiDraft.default_unit,
+        grams_per_unit: aiDraft.grams_per_unit,
+        is_default: true,
+        display_order: 0,
+        created_at: new Date().toISOString(),
+      }],
+    };
+    setSelectedFood(tempFood);
+    setQuery(tempFood.name);
+    setShowAiLookup(false);
+    setAiDraft(null);
+    setAiQuery('');
+  };
+
+  const handleAiCancel = () => {
+    setShowAiLookup(false);
+    setAiDraft(null);
+    setAiQuery('');
   };
 
   const categoryOptions = [
@@ -113,7 +187,7 @@ export function FoodSearch({ mealType, onSelect, onClose }: FoodSearchProps) {
         />
 
         {/* Food List */}
-        {!selectedFood && (
+        {!selectedFood && !showAiLookup && (
           <div className="space-y-2">
             <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">{sectionLabel}</h3>
             
@@ -147,17 +221,175 @@ export function FoodSearch({ mealType, onSelect, onClose }: FoodSearchProps) {
               </div>
             )}
             
-            {/* Can't find your food */}
-            <div className="pt-4 text-center">
-              <button className="text-sm text-brand-600 hover:text-brand-700 font-medium">
-                Can't find your food? +
+            {/* Can't find your food — AI Lookup */}
+            {query.length >= 2 && !isLoading && displayFoods.length === 0 && (
+              <div className="pt-4">
+                <button
+                  onClick={() => {
+                    setShowAiLookup(true);
+                    setAiQuery(query);
+                  }}
+                  className="w-full p-4 bg-brand-50 border-2 border-dashed border-brand-300 rounded-xl text-brand-700 font-medium hover:bg-brand-100 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="h-5 w-5" />
+                  Can't find "{query}"? Look it up with AI
+                </button>
+              </div>
+            )}
+
+            {query.length < 2 && (
+              <div className="pt-4 text-center">
+                <button
+                  onClick={() => setShowAiLookup(true)}
+                  className="text-sm text-brand-600 hover:text-brand-700 font-medium inline-flex items-center gap-1"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  Can't find your food?
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* AI Lookup Panel */}
+        {showAiLookup && !aiDraft && (
+          <div className="space-y-4">
+            <div className="bg-white rounded-2xl border border-brand-200 p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="h-5 w-5 text-brand-600" />
+                <h3 className="font-semibold text-gray-900">AI Food Lookup</h3>
+              </div>
+              <p className="text-sm text-gray-500 mb-4">
+                Describe what you ate — AI will estimate the nutrition info.
+              </p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={aiQuery}
+                  onChange={(e) => setAiQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAiLookup()}
+                  placeholder='e.g. "2 roti with ghee"'
+                  className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  autoFocus
+                />
+                <Button
+                  onClick={handleAiLookup}
+                  disabled={!aiQuery.trim() || foodLookup.isPending}
+                  className="px-5 py-3"
+                >
+                  {foodLookup.isPending ? 'Looking up...' : 'Look up'}
+                </Button>
+              </div>
+              <button
+                onClick={handleAiCancel}
+                className="mt-3 text-sm text-gray-500 hover:text-gray-700"
+              >
+                Cancel
               </button>
+            </div>
+            {foodLookup.isPending && (
+              <div className="text-center py-6">
+                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent"></div>
+                <p className="text-sm text-gray-500 mt-2">Looking up nutrition data...</p>
+              </div>
+            )}
+            {foodLookup.isError && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">
+                Lookup failed. Please try again or search for a different food.
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* AI Draft Review — Editable */}
+        {showAiLookup && aiDraft && (
+          <div className="space-y-4">
+            <div className="bg-white rounded-2xl border border-brand-200 p-5">
+              <div className="flex items-center gap-2 mb-1">
+                <Sparkles className="h-5 w-5 text-brand-600" />
+                <h3 className="font-semibold text-gray-900">{aiDraft.name}</h3>
+              </div>
+              <div className="flex items-center gap-1.5 mb-4 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+                <span className="text-xs text-amber-700">Estimated nutrition — may vary</span>
+              </div>
+
+              <div className="space-y-3">
+                <AiEditRow
+                  label="Calories"
+                  unit="kcal"
+                  value={aiDraft.calories_per_100g}
+                  onChange={(v) => setAiDraft({ ...aiDraft, calories_per_100g: v })}
+                />
+                <AiEditRow
+                  label="Protein"
+                  unit="g"
+                  value={aiDraft.protein_per_100g}
+                  onChange={(v) => setAiDraft({ ...aiDraft, protein_per_100g: v })}
+                />
+                <AiEditRow
+                  label="Carbs"
+                  unit="g"
+                  value={aiDraft.carbs_per_100g}
+                  onChange={(v) => setAiDraft({ ...aiDraft, carbs_per_100g: v })}
+                />
+                <AiEditRow
+                  label="Fat"
+                  unit="g"
+                  value={aiDraft.fat_per_100g}
+                  onChange={(v) => setAiDraft({ ...aiDraft, fat_per_100g: v })}
+                />
+                <AiEditRow
+                  label="Fiber"
+                  unit="g"
+                  value={aiDraft.fiber_per_100g}
+                  onChange={(v) => setAiDraft({ ...aiDraft, fiber_per_100g: v })}
+                />
+
+                <div className="pt-2 border-t border-gray-100">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Serving unit</label>
+                      <input
+                        type="text"
+                        value={aiDraft.default_unit}
+                        onChange={(e) => setAiDraft({ ...aiDraft, default_unit: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Grams per serving</label>
+                      <input
+                        type="number"
+                        value={aiDraft.grams_per_unit}
+                        onChange={(e) => setAiDraft({ ...aiDraft, grams_per_unit: Number(e.target.value) || 100 })}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-5">
+                <Button
+                  onClick={handleAiConfirm}
+                  className="flex-1 py-3"
+                >
+                  Confirm & Add
+                </Button>
+                <button
+                  onClick={handleAiCancel}
+                  className="px-4 py-3 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-colors text-sm font-medium"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         )}
 
         {/* Food Detail Panel */}
-        {currentFood && (
+        {currentFood && !showAiLookup && (
           <div className="space-y-6">
             {/* Food Header */}
             <div className="flex items-start justify-between">
@@ -258,6 +490,24 @@ export function FoodSearch({ mealType, onSelect, onClose }: FoodSearchProps) {
           </div>
         )}
       </main>
+    </div>
+  );
+}
+
+function AiEditRow({ label, unit, value, onChange }: { label: string; unit: string; value: number; onChange: (v: number) => void }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-sm text-gray-700">{label}</span>
+      <div className="flex items-center gap-1">
+        <input
+          type="number"
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value) || 0)}
+          className="w-20 px-2 py-1.5 text-right border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          step="0.1"
+        />
+        <span className="text-xs text-gray-500 w-8">{unit}</span>
+      </div>
     </div>
   );
 }

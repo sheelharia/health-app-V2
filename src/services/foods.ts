@@ -120,3 +120,16 @@ export function getDefaultUnit(food: FoodWithUnits): FoodUnit | undefined {
 export function formatUnitName(unit: FoodUnit): string {
   return unit.name;
 }
+
+export interface FoodLookupResult {
+  food: FoodWithUnits;
+  source: 'database' | 'database_similar' | 'ai_lookup';
+}
+
+export async function lookupFood(query: string): Promise<FoodLookupResult> {
+  const { data, error } = await supabase.functions.invoke('lookup-food', {
+    body: { query },
+  });
+  if (error) throw new Error(error.message || 'Food lookup failed');
+  return data;
+}

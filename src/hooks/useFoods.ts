@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { debounce } from 'lodash-es';
 import { useRef } from 'react';
-import { searchFoods, getFoodCategories, getFoodWithUnits } from '../services/foods';
+import { searchFoods, getFoodCategories, getFoodWithUnits, lookupFood } from '../services/foods';
 import { QUERY_KEYS } from '../lib/queryClient';
 import type { FoodWithUnits } from '../lib/supabase';
 
@@ -72,4 +72,15 @@ export function useRecentFoods(limit = 10) {
   });
 
   return { recentFoods, addRecentFood };
+}
+
+export function useFoodLookup() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (query: string) => lookupFood(query),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['foods'] });
+    },
+  });
 }
