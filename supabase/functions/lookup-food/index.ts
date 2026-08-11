@@ -52,56 +52,80 @@ function levenshtein(a: string, b: string): number {
 }
 
 async function callGroq(query: string): Promise<NutritionResult> {
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${GROQ_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "llama-3.3-70b-versatile",
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: query },
-      ],
-      response_format: { type: "json_object" },
-      temperature: 0.3,
-    }),
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  try {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${GROQ_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: query },
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.3,
+      }),
+      signal: controller.signal,
+    });
 
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Groq API error: ${res.status} - ${err}`);
+    clearTimeout(timeout);
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Groq API error: ${res.status} - ${err}`);
+    }
+
+    const text = await res.text();
+    if (!text || text.trim().length === 0) throw new Error("Empty response body from Groq");
+    const data = JSON.parse(text);
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) throw new Error("No content in Groq response");
+    return JSON.parse(content);
+  } catch (e) {
+    clearTimeout(timeout);
+    throw e;
   }
-
-  const data = await res.json();
-  const content = data.choices?.[0]?.message?.content;
-  if (!content) throw new Error("Empty response from Groq");
-  return JSON.parse(content);
 }
 
 async function callGemini(query: string): Promise<NutritionResult> {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: `${SYSTEM_PROMPT}\n\nUser query: ${query}` }] }],
-        generationConfig: { responseMimeType: "application/json", temperature: 0.3 },
-      }),
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: `${SYSTEM_PROMPT}\n\nUser query: ${query}` }] }],
+          generationConfig: { responseMimeType: "application/json", temperature: 0.3 },
+        }),
+        signal: controller.signal,
+      }
+    );
+
+    clearTimeout(timeout);
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Gemini API error: ${res.status} - ${err}`);
     }
-  );
 
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Gemini API error: ${res.status} - ${err}`);
+    const text = await res.text();
+    if (!text || text.trim().length === 0) throw new Error("Empty response body from Gemini");
+    const data = JSON.parse(text);
+    const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!content) throw new Error("No content in Gemini response");
+    return JSON.parse(content);
+  } catch (e) {
+    clearTimeout(timeout);
+    throw e;
   }
-
-  const data = await res.json();
-  const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!content) throw new Error("Empty response from Gemini");
-  return JSON.parse(content);
 }
 
 async function lookupWithAI(query: string): Promise<NutritionResult> {
