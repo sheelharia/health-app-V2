@@ -74,7 +74,7 @@ export async function addMealItem(
   if (food.error) throw food.error;
   if (unit.error) throw unit.error;
 
-  const { fiber: _, ...nutrition } = calculateNutrition(food.data, unit.data, quantity);
+  const nutrition = calculateNutrition(food.data, unit.data, quantity);
 
   const { data, error } = await supabase
     .from('meal_items')
@@ -116,7 +116,7 @@ export async function updateMealItem(
   if (food.error) throw food.error;
   if (unit.error) throw unit.error;
 
-  const { fiber: _, ...nutrition } = calculateNutrition(food.data, unit.data, quantity);
+  const nutrition = calculateNutrition(food.data, unit.data, quantity);
 
   const { data, error } = await supabase
     .from('meal_items')
