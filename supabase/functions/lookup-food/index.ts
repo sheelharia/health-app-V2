@@ -138,15 +138,17 @@ async function lookupWithAI(query: string): Promise<NutritionResult> {
 }
 
 serve(async (req) => {
-  // CORS headers
+  // CORS headers — echo origin for credentials support
+  const origin = req.headers.get("Origin") || "*";
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
+    "Access-Control-Allow-Credentials": "true",
+  };
+
   if (req.method === "OPTIONS") {
-    return new Response("ok", {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      },
-    });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
@@ -154,7 +156,7 @@ serve(async (req) => {
     if (!query || typeof query !== "string" || query.trim().length < 2) {
       return new Response(
         JSON.stringify({ error: "Query must be at least 2 characters" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -171,7 +173,7 @@ serve(async (req) => {
     if (existingExact) {
       return new Response(
         JSON.stringify({ food: existingExact, source: "database" }),
-        { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -189,7 +191,6 @@ serve(async (req) => {
       for (const food of allFoods) {
         const existingName = food.name.toLowerCase().trim();
         if (normalizedName === existingName) {
-          // Exact match after AI normalization — fetch full food with units
           const { data: fullFood } = await supabase
             .from("foods")
             .select("*, units:food_units(*)")
@@ -197,7 +198,7 @@ serve(async (req) => {
             .single();
           return new Response(
             JSON.stringify({ food: fullFood, source: "database" }),
-            { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
         if (levenshtein(normalizedName, existingName) <= 2) {
@@ -208,7 +209,7 @@ serve(async (req) => {
             .single();
           return new Response(
             JSON.stringify({ food: fullFood, source: "database_similar" }),
-            { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
       }
@@ -245,7 +246,6 @@ serve(async (req) => {
 
     if (unitErr) {
       console.error("Insert unit error:", unitErr);
-      // Non-fatal — food exists without a unit
     }
 
     // Step 6: Fetch full food with units
@@ -257,13 +257,13 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ food: fullFood, source: "ai_lookup" }),
-      { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
     console.error("lookup-food error:", err);
     return new Response(
       JSON.stringify({ error: err.message || "Lookup failed" }),
-      { status: 500, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
