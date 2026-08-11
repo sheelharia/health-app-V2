@@ -184,7 +184,7 @@ export function FoodSearch({ mealType, onSelect, onClose }: FoodSearchProps) {
                   onChange={setQuantity}
                   min={0.5}
                   max={50}
-                  step={selectedUnit?.grams_per_unit && selectedUnit.grams_per_unit < 50 ? 0.5 : 1}
+                  step={0.5}
                 />
               </div>
               <div>
