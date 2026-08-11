@@ -11,7 +11,7 @@ import { format } from 'date-fns';
 
 interface FoodSearchProps {
   mealType: string;
-  onSelect: (food: FoodWithUnits, unit: FoodUnit) => void;
+  onSelect: (food: FoodWithUnits, unit: FoodUnit, quantity: number) => void;
   onClose: () => void;
 }
 
@@ -45,7 +45,7 @@ export function FoodSearch({ mealType, onSelect, onClose }: FoodSearchProps) {
 
   const handleAdd = () => {
     if (currentFood && selectedUnit) {
-      onSelect(currentFood, selectedUnit);
+      onSelect(currentFood, selectedUnit, quantity);
       setSelectedFood(null);
       setSelectedUnit(null);
       setQuantity(1);

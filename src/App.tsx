@@ -103,10 +103,10 @@ function FoodSearchPage() {
       )}
       <FoodSearch
         mealType={mealType.charAt(0).toUpperCase() + mealType.slice(1)}
-        onSelect={(food, unit) => {
+        onSelect={(food, unit, qty) => {
           setError(null);
           addItem.mutate(
-            { mealType: validMealType, foodId: food.id, unitId: unit.id, quantity: 1 },
+            { mealType: validMealType, foodId: food.id, unitId: unit.id, quantity: qty },
             {
               onSuccess: () => navigate('/'),
               onError: (err) => {

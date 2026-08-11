@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMealsByDate, useMealActions, useDailySummary, useDailyGoal } from '@hooks/useMeals';
+import { useFoodDetail } from '@hooks/useFoods';
 import { useAuth } from '@hooks/useAuth';
 import { Card } from '@components/ui/Card';
 import { Button } from '@components/ui/Button';
@@ -48,7 +49,8 @@ export function Home() {
   const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date()));
 
   const { data: meals, isLoading: mealsLoading } = useMealsByDate(format(selectedDate, 'yyyy-MM-dd'));
-  const { addItem, deleteItem } = useMealActions(format(selectedDate, 'yyyy-MM-dd'));
+  const { addItem, updateItem, deleteItem } = useMealActions(format(selectedDate, 'yyyy-MM-dd'));
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const { totals, goalCalories, progress, remaining, isOverGoal, mealBreakdown } = useDailySummary(format(selectedDate, 'yyyy-MM-dd'));
 
   const handleDateChange = (days: number) => {
@@ -198,13 +200,43 @@ export function Home() {
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => navigate(`/edit-food/${item.id}`)}
-                          className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
-                          aria-label="Edit item"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
+                        {editingItemId === item.id ? (
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="number"
+                              defaultValue={item.quantity}
+                              min={0.5}
+                              step={0.5}
+                              autoFocus
+                              className="w-16 px-2 py-1 text-sm border border-gray-200 rounded-lg"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  const val = parseFloat((e.target as HTMLInputElement).value);
+                                  if (val > 0) {
+                                    updateItem.mutate({ itemId: item.id, quantity: val });
+                                  }
+                                  setEditingItemId(null);
+                                }
+                                if (e.key === 'Escape') setEditingItemId(null);
+                              }}
+                              onBlur={(e) => {
+                                const val = parseFloat(e.target.value);
+                                if (val > 0) {
+                                  updateItem.mutate({ itemId: item.id, quantity: val });
+                                }
+                                setEditingItemId(null);
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setEditingItemId(item.id)}
+                            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
+                            aria-label="Edit item"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDeleteItem(item.id)}
                           className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
