@@ -190,7 +190,7 @@ serve(async (req) => {
       }
     }
 
-    // Step 4: Insert new food
+    // Step 4: Insert new food (foods table has no fiber_per_100g column)
     const { data: newFood, error: insertErr } = await supabase
       .from("foods")
       .insert({
@@ -199,7 +199,6 @@ serve(async (req) => {
         protein_per_100g: nutrition.protein_per_100g,
         carbs_per_100g: nutrition.carbs_per_100g,
         fat_per_100g: nutrition.fat_per_100g,
-        fiber_per_100g: nutrition.fiber_per_100g || 0,
         category: "AI Lookup",
         is_active: true,
       })
