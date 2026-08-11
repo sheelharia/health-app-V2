@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@hooks/useAuth';
 import { useDailyGoal } from '@hooks/useMeals';
 import { Card, CardHeader } from '@components/ui/Card';
@@ -34,7 +34,7 @@ export function Settings() {
   const savedMacros = loadMacroTargets();
   const savedPercents = loadMealPercentages();
   
-  const [calories, setCalories] = useState(goal?.calories || 2000);
+  const [calories, setCalories] = useState(2000);
   const [protein, setProtein] = useState(savedMacros.protein);
   const [carbs, setCarbs] = useState(savedMacros.carbs);
   const [fat, setFat] = useState(savedMacros.fat);
@@ -42,6 +42,13 @@ export function Settings() {
   
   const [mealPercentages, setMealPercentages] = useState(savedPercents);
   const [saved, setSaved] = useState(false);
+
+  // Sync calories with DB goal once it loads
+  useEffect(() => {
+    if (goal?.calories) {
+      setCalories(goal.calories);
+    }
+  }, [goal?.calories]);
 
   const handleSaveGoals = () => {
     setGoal(calories);

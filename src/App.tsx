@@ -85,6 +85,7 @@ function FoodSearchPage() {
   const navigate = useNavigate();
   const today = format(new Date(), 'yyyy-MM-dd');
   const { addItem } = useMealActions(today);
+  const [error, setError] = useState<string | null>(null);
 
   if (!mealType) {
     return <Navigate to="/" replace />;
@@ -93,22 +94,31 @@ function FoodSearchPage() {
   const validMealType = mealType.toLowerCase() as 'breakfast' | 'lunch' | 'snack' | 'dinner';
 
   return (
-    <FoodSearch
-      mealType={mealType.charAt(0).toUpperCase() + mealType.slice(1)}
-      onSelect={(food, unit) => {
-        addItem.mutate(
-          { mealType: validMealType, foodId: food.id, unitId: unit.id, quantity: 1 },
-          {
-            onSuccess: () => navigate('/'),
-            onError: (err) => {
-              console.error('Failed to add food:', err);
-              navigate('/');
-            },
-          }
-        );
-      }}
-      onClose={() => navigate('/')}
-    />
+    <div>
+      {error && (
+        <div className="fixed top-4 left-4 right-4 z-50 bg-red-50 border border-red-200 rounded-xl p-4 shadow-lg">
+          <p className="text-sm text-red-700 font-medium">{error}</p>
+          <button onClick={() => setError(null)} className="text-xs text-red-500 mt-1">Dismiss</button>
+        </div>
+      )}
+      <FoodSearch
+        mealType={mealType.charAt(0).toUpperCase() + mealType.slice(1)}
+        onSelect={(food, unit) => {
+          setError(null);
+          addItem.mutate(
+            { mealType: validMealType, foodId: food.id, unitId: unit.id, quantity: 1 },
+            {
+              onSuccess: () => navigate('/'),
+              onError: (err) => {
+                console.error('Failed to add food:', err);
+                setError(`Failed to add ${food.name}. ${err.message || 'Please try again.'}`);
+              },
+            }
+          );
+        }}
+        onClose={() => navigate('/')}
+      />
+    </div>
   );
 }
 

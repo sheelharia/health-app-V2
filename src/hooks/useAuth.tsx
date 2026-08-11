@@ -14,6 +14,15 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+async function ensureUserExists(userId: string, email: string) {
+  const { error } = await supabase
+    .from('users')
+    .upsert({ id: userId, email }, { onConflict: 'id' });
+  if (error) {
+    console.error('Failed to ensure user exists:', error.message);
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -36,15 +45,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      if (session?.user) {
+        await ensureUserExists(session.user.id, session.user.email || '');
+      }
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+      if (session?.user) {
+        await ensureUserExists(session.user.id, session.user.email || '');
+      }
       setLoading(false);
     });
 
