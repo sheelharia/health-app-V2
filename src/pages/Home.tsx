@@ -37,6 +37,14 @@ function getMealLabel(type: MealType): string {
   return type.charAt(0).toUpperCase() + type.slice(1);
 }
 
+function loadMealPercentages() {
+  try {
+    const saved = localStorage.getItem('meal_percentages');
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return { breakfast: 30, lunch: 35, snack: 10, dinner: 25 };
+}
+
 const EMPTY_STATE_MESSAGES = [
   "Fuel your body right today! 🌱",
   "What's on the menu today? 🍽️",
@@ -52,6 +60,7 @@ export function Home() {
   const { addItem, updateItem, deleteItem } = useMealActions(format(selectedDate, 'yyyy-MM-dd'));
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const { totals, goalCalories, progress, remaining, isOverGoal, mealBreakdown } = useDailySummary(format(selectedDate, 'yyyy-MM-dd'));
+  const mealPercentages = loadMealPercentages();
 
   const handleDateChange = (days: number) => {
     setSelectedDate(prev => addDays(prev, days));
@@ -134,7 +143,8 @@ export function Home() {
 
         {/* Meal Sections */}
         {mealBreakdown.map((meal) => {
-          const mealTarget = Math.round(goalCalories * (meal.type === 'breakfast' ? 0.3 : meal.type === 'lunch' ? 0.35 : meal.type === 'snack' ? 0.1 : 0.25));
+          const mealPercent = (mealPercentages[meal.type as MealType] || 25) / 100;
+          const mealTarget = Math.round(goalCalories * mealPercent);
           const mealCalories = meal.items.reduce((sum, item) => sum + item.calories, 0);
           const isEmpty = meal.items.length === 0;
 
