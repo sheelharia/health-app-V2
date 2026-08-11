@@ -414,7 +414,7 @@ export function FoodSearch({ mealType, onSelect, onClose }: FoodSearchProps) {
                 <Stepper
                   value={quantity}
                   onChange={setQuantity}
-                  min={0.5}
+                  min={0.1}
                   max={50}
                   step={0.5}
                 />
